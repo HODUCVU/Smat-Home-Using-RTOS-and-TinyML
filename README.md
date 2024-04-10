@@ -21,5 +21,5 @@
 * [Detail project in website](https://www.digikey.com/en/maker/projects/intro-to-tinyml-part-1-training-a-model-for-arduino-in-tensorflow/8f1fc8c0b83d417ab521c48864d2a8ec)
 * [code colab](https://gist.github.com/ShawnHymel/79237fe6aee5a3653c497d879f746c0c)
 ### Video 2
-[Video tutorual train recognition speech  with Arduino](https://www.youtube.com/watch?v=fRSVQ4Fkwjc)
-[repo code](https://github.com/ShawnHymel/ei-keyword-spotting)
+* [Video tutorual train recognition speech  with Arduino](https://www.youtube.com/watch?v=fRSVQ4Fkwjc)
+* [repo code](https://github.com/ShawnHymel/ei-keyword-spotting)
