@@ -23,3 +23,16 @@
 ### Video 2
 * [Video tutorual train recognition speech  with Arduino](https://www.youtube.com/watch?v=fRSVQ4Fkwjc)
 * [repo code](https://github.com/ShawnHymel/ei-keyword-spotting)
+## Run platformio on terminal
+* Build: 
+  ```
+   /mnt/c/Users/hoduc/.platformio/penv/Scripts/platformio.exe run
+  ```
+* Upload:
+  ```
+  /mnt/c/Users/hoduc/.platformio/penv/Scripts/platformio.exe run --target upload
+  ```
+* Monitor:
+  ```
+  /mnt/c/Users/hoduc/.platformio/penv/Scripts/platformio.exe device monitor
+  ```
