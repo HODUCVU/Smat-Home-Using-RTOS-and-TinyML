@@ -55,7 +55,7 @@ void definingPinMode(bool permisionConfig = false) {
 void inforDHT(){
   sensor_t sensor;
   dht.temperature().getSensor(&sensor);
-  Serial.printf(F("Temperature Sensor"));
+  Serial.println(F("Temperature Sensor"));
   Serial.print  (F("Sensor Type: ")); Serial.println(sensor.name);
   Serial.print  (F("Driver Ver:  ")); Serial.println(sensor.version);
   Serial.print  (F("Unique ID:   ")); Serial.println(sensor.sensor_id);
@@ -76,9 +76,9 @@ void inforDHT(){
 }
 void setup() {
   Serial.begin(9600);
-  initValue(permissionInit=true);
+  initValue(true);
   inforDHT();
-  definingPinMode(permisionConfig=true);
+  definingPinMode(true);
   /* xTaskCreate(blink_task_LED1, "Blink led 1", 1024, NULL, 1, NULL); */
   /* xTaskCreate(printS, "Hello", 1024, NULL, 1, NULL); */
   /* xTaskCreate(printTest, "Test", 1024, NULL, 2, NULL); */
