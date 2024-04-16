@@ -36,3 +36,23 @@ Short-explain: **Triển khai nhà thông minh, huấn luyện cho module về m
   ```
   /mnt/c/Users/hoduc/.platformio/penv/Scripts/platformio.exe device monitor
   ```
+* Notes work:
+```
+Function
+Primary:
+1. Led on/off
+2. Fan on/off
+4. On/off Fan/Led with DHT
+5. On/off Fan with Smoke sensor
+Extra:
+ On/off with voice
+--------------------
+Step work:
+Xây dựng khung code
+Next work: Code module step by step use FreeRTOS api
+Test code
+Voice regconization
+Test code
+Complete project
+Write Report (slide)
+```
