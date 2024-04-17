@@ -48,10 +48,10 @@ Extra:
  On/off with voice
 --------------------
 Step work:
-Xây dựng khung code
-Doing work: Code module step by step use FreeRTOS api
-Test code
-Voice regconization
+Xây dựng khung code -- Done
+Code module step by step use FreeRTOS api -- Done
+Test code -- testing 
+Voice regconization -- Doing
 Test code
 Complete project
 Write Report (slide)
