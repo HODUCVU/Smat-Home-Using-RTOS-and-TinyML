@@ -49,7 +49,7 @@ Extra:
 --------------------
 Step work:
 Xây dựng khung code
-Next work: Code module step by step use FreeRTOS api
+Doing work: Code module step by step use FreeRTOS api
 Test code
 Voice regconization
 Test code

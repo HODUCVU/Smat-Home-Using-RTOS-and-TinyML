@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <FreeRTOSConfig.h>
+#include <Ticker.h>
 #include <Adafruit_Sensor.h>
 #include <DHT.h>
 #include <DHT_U.h>
@@ -19,8 +20,8 @@ MQ135 mq135_sensor(MQ135PIN);
 static QueueHandle_t tempReading;
 static QueueHandle_t smokingReading;
 // Define task task Handle 
-TaskHandle_t Fan_handle = NULL;
-TaskHandle_t Light_handle = NULL;
+TaskHandle_t handle_Fan = NULL;
+TaskHandle_t handle_Light = NULL;
 // Status On/Off -> True/False
 bool fanStatus, lightStatus;
 // Task functions
@@ -28,6 +29,7 @@ void taskTempRead(void *pvParameter); // print values to monitor -> return tempe
 void taskSmokeDetect(void *pvParameter); //MQ2 and humidity from DHT sensor, print values to monitor -> return threshold
 void taskControlLight(void *pvParameter);
 void taskControlFan(void *pvParameter);
+void taskControlWithVoice(void *pvParameter); //Use semaphore and mutex to manage data of controller.
 // Initialization function
 void initValue(bool permissionInit= false) {
   if (permissionInit) {
@@ -81,47 +83,60 @@ void setup() {
   definingPinMode(true);
 
   // Create Task 
-  xTaskCreate(taskTempRead, "Reading Temperature", 2048, NULL, 1, NULL);
-  xTaskCreate(taskSmokeDetect, "Smoking Detect", 2048, NULL, 1, NULL);
-  /* xTaskCreate(taskControlFan, "Controller Fan", 1024, NULL, 1, NULL); */
-  /* xTaskCreate(taskControlLight, "Controller Light", 1024, NULL, 1, NULL); */
+  xTaskCreate(taskTempRead, "Reading Temperature", 2048, NULL, 3, NULL);
+  xTaskCreate(taskSmokeDetect, "Smoking Detect", 2048, NULL, 2, NULL);
+  xTaskCreate(taskControlFan, "Controller Fan", 1024, NULL, 1, &handle_Fan );
+  xTaskCreate(taskControlLight, "Controller Light", 1024, NULL, 1, &handle_Light);
+
+  // Turn off fan and light handle 
+  /* vTaskSuspend(handle_Fan); */
+  /* vTaskSuspend(handle_Light); */
 }
 
 void loop() {}
 
 void taskTempRead(void *pvParameter) {
   sensors_event_t event;
+  float temperature;
   while (true) {
     // Read Temperature
     dht.temperature().getEvent(&event);
     if(isnan(event.temperature)) {
       Serial.println(F("Error reading temperature"));
-      // return 0.0; -> Queues give
+      /* return; // stop */
+      vTaskSuspend(handle_Fan);
+      vTaskSuspend(handle_Light);
     }
     Serial.print(F("Temperature: "));
     Serial.print(event.temperature);
     Serial.println(F("°C"));
-    // return float(event.temperature); -> Queues give
+    // return float(event.temperature); -> Queues send
+    temperature = event.temperature;
+    xQueueSend(tempReading, (float*)&temperature, 10);
     vTaskDelay(500/portTICK_PERIOD_MS);
   }
 }
 void taskSmokeDetect(void *pvParameter) {
   // Read humidity
   sensors_event_t event;
+  float temperature, humidity; 
   while(true) {
     dht.humidity().getEvent(&event);
     if(isnan(event.relative_humidity)) {
       Serial.println(F("Error reading humidity"));
-      //return 0.0; -> Queues give
+      /* return; //stop */
+      vTaskSuspend(handle_Fan);
     }
-    float humidity = event.relative_humidity;
-    // temperature = tempReading(); -> Solve later -> Queues take
-    // Use temporary temperature
-    float temperature = 25;
+    humidity = event.relative_humidity;
+    // tempQueues take
+    xQueueReceive(tempReading, (float*)&temperature, portMAX_DELAY);
+
     float correctedRZero = mq135_sensor.getCorrectedRZero(temperature, humidity);
     float resistance = mq135_sensor.getResistance();
     float correctedPPM = mq135_sensor.getCorrectedPPM(temperature, humidity);
     // Queues Give values (I think we will use ppm for detect smoke)
+    xQueueSend(smokingReading, (float *)&correctedPPM, 10);
+
     Serial.println("Smoking Detect: ");
     Serial.print("Rzero: ");
     Serial.println(correctedRZero);
@@ -134,9 +149,65 @@ void taskSmokeDetect(void *pvParameter) {
 }
 void taskControlLight(void *pvParameter) {
   // When temperature is cool -> On else Off
-  // When voice "On" and "Off"
+  float temperature;
+  while(true){
+    xQueueReceive(tempReading, (float*)&temperature, portMAX_DELAY);
+    if(temperature < float(20)) {
+      if(!lightStatus) {
+        digitalWrite(LIGHTPIN, HIGH);
+        lightStatus = true;
+        Serial.println(F("Light on"));
+      }
+    } else {
+      if(lightStatus) {
+        digitalWrite(LIGHTPIN, LOW);
+        lightStatus = false;
+        Serial.println(F("Light off"));
+      }
+    }
+    // When voice "On" and "Off" and "Stop"
+    // "Stop" to suppend TaskHandle 
+    vTaskDelay(200/portTICK_PERIOD_MS);
+  }
 }
 void taskControlFan(void *pvParameter) {
   // Air is polluted or temperature is hot -> On else Off
-  // When voice "Activate" and "Deactivate"
+  float temperature, airCondition;
+  while(true){
+    // Take temperature
+    xQueueReceive(tempReading, (float*)&temperature, portMAX_DELAY);
+    // temperature in home higher 30 °C
+    if(temperature > float(30)) {
+      if(!fanStatus) {
+        digitalWrite(FANPIN, HIGH);
+        fanStatus = true;
+        Serial.println(F("Fan on"));
+      }
+    } else {
+      if (fanStatus) {
+        digitalWrite(FANPIN, LOW);
+        fanStatus = false;
+        Serial.println(F("Fan off"));
+      }
+    }
+    // Take air condition in home
+    // Code same with temperature, but I don't want to wait to wear both tempReading and smokingReading at the same time
+    xQueueReceive(smokingReading, (float*)&airCondition, portMAX_DELAY);
+    if(airCondition >= float(0.5)) {
+      if(!fanStatus) {
+        digitalWrite(FANPIN, HIGH);
+        fanStatus = true;
+        Serial.println(F("Fan on"));
+      } else {
+        if (fanStatus) {
+          digitalWrite(FANPIN, LOW);
+          fanStatus = false;
+          Serial.println(F("Fan off"));
+        }
+      }
+    }
+    // When voice "Activate" and "Deactivate"
+    // "Stop" to suppend TaskHandle 
+    vTaskDelay(200/portTICK_PERIOD_MS);
+  }
 }
