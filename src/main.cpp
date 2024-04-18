@@ -17,8 +17,8 @@
 DHT_Unified dht(DHTPIN, DHTTYPE);
 MQ135 mq135_sensor(MQ135PIN);
 // Queues for FreeRTOSConfig
-static QueueHandle_t tempReading;
-static QueueHandle_t smokingReading;
+QueueHandle_t tempReading;
+QueueHandle_t smokingReading;
 // Define task task Handle 
 TaskHandle_t handle_Fan = NULL;
 TaskHandle_t handle_Light = NULL;
@@ -223,18 +223,17 @@ void taskControlFan(void *pvParameter) {
     // Code same with temperature, but I don't want to wait to wear both tempReading and smokingReading at the same time
     if(smokingReading != NULL) {
       if(xQueueReceive(smokingReading, &(airCondition), (TickType_t) 10) == pdPASS) {
-
         if(airCondition >= float(0.5)) {
           if(!fanStatus) {
             digitalWrite(FANPIN, HIGH);
             fanStatus = true;
             Serial.println(F("Fan on"));
-          } else {
-            if (fanStatus) {
-              digitalWrite(FANPIN, LOW);
-              fanStatus = false;
-              Serial.println(F("Fan off"));
-            }
+          }       
+        } else {
+          if (fanStatus) {
+            digitalWrite(FANPIN, LOW);
+            fanStatus = false;
+            Serial.println(F("Fan off"));
           }
         }
       }
