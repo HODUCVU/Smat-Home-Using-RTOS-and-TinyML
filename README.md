@@ -26,17 +26,17 @@ Short-explain: **Triển khai nhà thông minh, huấn luyện cho module về m
 ## Run platformio on terminal
 * Build: 
   ```
-   /mnt/c/Users/hoduc/.platformio/penv/Scripts/platformio.exe run
+   /mnt/c/Users/<name>/.platformio/penv/Scripts/platformio.exe run
   ```
 * Upload:
   ```
-  /mnt/c/Users/hoduc/.platformio/penv/Scripts/platformio.exe run --target upload
+  /mnt/c/Users/<name>/.platformio/penv/Scripts/platformio.exe run --target upload
   ```
 * Monitor:
   ```
-  /mnt/c/Users/hoduc/.platformio/penv/Scripts/platformio.exe device monitor
+  /mnt/c/Users/<name>/.platformio/penv/Scripts/platformio.exe device monitor
   ```
-* Notes work:
+## Notes work:
 ```
 Function
 Primary:

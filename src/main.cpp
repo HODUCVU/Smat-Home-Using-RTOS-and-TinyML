@@ -47,6 +47,9 @@ void definingPinMode(bool permisionConfig = false) {
     // Output pin mode
     pinMode(LIGHTPIN, OUTPUT);
     pinMode(FANPIN, OUTPUT);
+    // Input pin mode
+    /* pinMode(DHTPIN, INPUT); */
+    /* pinMode(MQ135PIN, INPUT); */
     // Start
     digitalWrite(LIGHTPIN, HIGH);
     digitalWrite(FANPIN, LOW);
@@ -73,20 +76,24 @@ void inforDHT(){
   Serial.print  (F("Max Value:   ")); Serial.print(sensor.max_value); Serial.println(F("%"));
   Serial.print  (F("Min Value:   ")); Serial.print(sensor.min_value); Serial.println(F("%"));
   Serial.print  (F("Resolution:  ")); Serial.print(sensor.resolution); Serial.println(F("%"));
-
   vTaskDelay(1000/portTICK_PERIOD_MS);
 }
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(460800);
   initValue(true);
   inforDHT();
   definingPinMode(true);
 
-  // Create Task 
-  xTaskCreate(taskTempRead, "Reading Temperature", 2048, NULL, 3, NULL);
-  xTaskCreate(taskSmokeDetect, "Smoking Detect", 2048, NULL, 2, NULL);
-  xTaskCreate(taskControlFan, "Controller Fan", 1024, NULL, 1, &handle_Fan );
-  xTaskCreate(taskControlLight, "Controller Light", 1024, NULL, 1, &handle_Light);
+  if(tempReading == NULL || smokingReading == NULL) {
+    Serial.println("Configuration Failed!");
+  } else {
+    // Create Task 
+    xTaskCreate(taskTempRead, "Reading Temperature", 2048, NULL, 3, NULL);
+    xTaskCreate(taskSmokeDetect, "Smoking Detect", 2048, NULL, 2, NULL);
+    xTaskCreate(taskControlFan, "Controller Fan", 1024, NULL, 1, &handle_Fan );
+    xTaskCreate(taskControlLight, "Controller Light", 1024, NULL, 1, &handle_Light);
+
+  }
 
   // Turn off fan and light handle 
   /* vTaskSuspend(handle_Fan); */
@@ -96,6 +103,7 @@ void setup() {
 void loop() {}
 
 void taskTempRead(void *pvParameter) {
+  try {
   sensors_event_t event;
   float temperature;
   while (true) {
@@ -106,37 +114,49 @@ void taskTempRead(void *pvParameter) {
       /* return; // stop */
       vTaskSuspend(handle_Fan);
       vTaskSuspend(handle_Light);
+      vTaskDelay(1000/portTICK_PERIOD_MS);
+      continue;
     }
     Serial.print(F("Temperature: "));
     Serial.print(event.temperature);
     Serial.println(F("°C"));
     // return float(event.temperature); -> Queues send
     temperature = event.temperature;
-    xQueueSend(tempReading, (float*)&temperature, 10);
+    xQueueSend(tempReading, (void*)&temperature,(TickType_t) 0);
     vTaskDelay(500/portTICK_PERIOD_MS);
+  }
+  } catch (std::exception& e) {
+    Serial.print(F("Error: "));
+    Serial.println(e.what());
   }
 }
 void taskSmokeDetect(void *pvParameter) {
   // Read humidity
-  sensors_event_t event;
-  float temperature, humidity; 
+  /* sensors_event_t event; */
+  float temperature = 25.0, humidity = 25.0; 
+  float correctedRZero =0.0, resistance = 0.0, correctedPPM = 0.0;
   while(true) {
     dht.humidity().getEvent(&event);
     if(isnan(event.relative_humidity)) {
       Serial.println(F("Error reading humidity"));
-      /* return; //stop */
+      // return; //stop 
       vTaskSuspend(handle_Fan);
+      vTaskDelay(1000/portTICK_PERIOD_MS);
+      continue;
     }
+    Serial.println("Readed humidity, Waiting for tempReading!");
     humidity = event.relative_humidity;
     // tempQueues take
-    xQueueReceive(tempReading, (float*)&temperature, portMAX_DELAY);
-
-    float correctedRZero = mq135_sensor.getCorrectedRZero(temperature, humidity);
-    float resistance = mq135_sensor.getResistance();
-    float correctedPPM = mq135_sensor.getCorrectedPPM(temperature, humidity);
-    // Queues Give values (I think we will use ppm for detect smoke)
-    xQueueSend(smokingReading, (float *)&correctedPPM, 10);
-
+    if(tempReading != NULL) {
+      if(xQueueReceive(tempReading, &(temperature), (TickType_t) 10 ) ==pdPASS)
+      {
+        correctedRZero = mq135_sensor.getCorrectedRZero(temperature, humidity);
+        resistance = mq135_sensor.getResistance();
+        correctedPPM = mq135_sensor.getCorrectedPPM(temperature, humidity);
+        // Queues Give values (I think we will use ppm for detect smoke)
+        xQueueSend(smokingReading, (void*)&correctedPPM, (TickType_t) 0);
+      }
+    }
     Serial.println("Smoking Detect: ");
     Serial.print("Rzero: ");
     Serial.println(correctedRZero);
@@ -151,18 +171,22 @@ void taskControlLight(void *pvParameter) {
   // When temperature is cool -> On else Off
   float temperature;
   while(true){
-    xQueueReceive(tempReading, (float*)&temperature, portMAX_DELAY);
-    if(temperature < float(20)) {
-      if(!lightStatus) {
-        digitalWrite(LIGHTPIN, HIGH);
-        lightStatus = true;
-        Serial.println(F("Light on"));
-      }
-    } else {
-      if(lightStatus) {
-        digitalWrite(LIGHTPIN, LOW);
-        lightStatus = false;
-        Serial.println(F("Light off"));
+    if(tempReading != NULL) {
+      if(xQueueReceive(tempReading, &(temperature), (TickType_t) 10 ) ==pdPASS)
+      {
+        if(temperature < float(20)) {
+          if(!lightStatus) {
+            digitalWrite(LIGHTPIN, HIGH);
+            lightStatus = true;
+            Serial.println(F("Light on"));
+          }
+        } else {
+          if(lightStatus) {
+            digitalWrite(LIGHTPIN, LOW);
+            lightStatus = false;
+            Serial.println(F("Light off"));
+          }
+        }
       }
     }
     // When voice "On" and "Off" and "Stop"
@@ -175,34 +199,43 @@ void taskControlFan(void *pvParameter) {
   float temperature, airCondition;
   while(true){
     // Take temperature
-    xQueueReceive(tempReading, (float*)&temperature, portMAX_DELAY);
-    // temperature in home higher 30 °C
-    if(temperature > float(30)) {
-      if(!fanStatus) {
-        digitalWrite(FANPIN, HIGH);
-        fanStatus = true;
-        Serial.println(F("Fan on"));
+    if(tempReading != NULL) {
+      if(xQueueReceive(tempReading, &(temperature), (TickType_t) 10 ) ==pdPASS)
+      {
+        // temperature in home higher 30 °C
+        if(temperature > float(30)) {
+          if(!fanStatus) {
+            digitalWrite(FANPIN, HIGH);
+            fanStatus = true;
+            Serial.println(F("Fan on"));
+          }
+        } else {
+          if (fanStatus) {
+            digitalWrite(FANPIN, LOW);
+            fanStatus = false;
+            Serial.println(F("Fan off"));
+          }
+        }
       }
-    } else {
-      if (fanStatus) {
-        digitalWrite(FANPIN, LOW);
-        fanStatus = false;
-        Serial.println(F("Fan off"));
-      }
+
     }
     // Take air condition in home
     // Code same with temperature, but I don't want to wait to wear both tempReading and smokingReading at the same time
-    xQueueReceive(smokingReading, (float*)&airCondition, portMAX_DELAY);
-    if(airCondition >= float(0.5)) {
-      if(!fanStatus) {
-        digitalWrite(FANPIN, HIGH);
-        fanStatus = true;
-        Serial.println(F("Fan on"));
-      } else {
-        if (fanStatus) {
-          digitalWrite(FANPIN, LOW);
-          fanStatus = false;
-          Serial.println(F("Fan off"));
+    if(smokingReading != NULL) {
+      if(xQueueReceive(smokingReading, &(airCondition), (TickType_t) 10) == pdPASS) {
+
+        if(airCondition >= float(0.5)) {
+          if(!fanStatus) {
+            digitalWrite(FANPIN, HIGH);
+            fanStatus = true;
+            Serial.println(F("Fan on"));
+          } else {
+            if (fanStatus) {
+              digitalWrite(FANPIN, LOW);
+              fanStatus = false;
+              Serial.println(F("Fan off"));
+            }
+          }
         }
       }
     }
