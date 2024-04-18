@@ -5,7 +5,19 @@
 #include <DHT.h>
 #include <DHT_U.h>
 #include <MQ135.h>
-// Define PINi
+// Voice regconition
+#include <driver/i2s.h>
+#include <arduinoFFT.h>
+#include <Adafruit_NeoPixel.h>
+#include <TensorFlowLite_ESP32.h>
+#include <tensorflow/lite/micro/all_ops_resolver.h>
+#include <tensorflow/lite/micro/micro_error_reporter.h>
+#include <tensorflow/lite/micro/micro_interpreter.h>
+#include <tensorflow/lite/schema/schema_generated.h>
+// #include <tensorflow/lite/version.h>
+#include <model.h>
+#define I2S_PORT I2S_NUM_1
+// Define PIN
 // Output pin
 #define LIGHTPIN 25
 #define FANPIN 26
@@ -132,7 +144,7 @@ void taskTempRead(void *pvParameter) {
 }
 void taskSmokeDetect(void *pvParameter) {
   // Read humidity
-  /* sensors_event_t event; */
+  sensors_event_t event;
   float temperature = 25.0, humidity = 25.0; 
   float correctedRZero =0.0, resistance = 0.0, correctedPPM = 0.0;
   while(true) {
