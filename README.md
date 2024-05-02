@@ -38,6 +38,7 @@ Short-explain: **Triển khai nhà thông minh, huấn luyện cho module về m
   ```
 ## Notes work:
 ```
+Note: Programming follow OOP
 Function
 Primary:
 1. Led on/off
