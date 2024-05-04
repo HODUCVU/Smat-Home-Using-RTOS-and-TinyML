@@ -37,7 +37,7 @@ Short-explain: **Triển khai nhà thông minh, huấn luyện cho module về m
   /mnt/c/Users/<name>/.platformio/penv/Scripts/platformio.exe device monitor
   ```
 ## Notes work:
-```
+<!--```
 Function
 Primary:
 1. Led on/off
@@ -55,4 +55,4 @@ Voice regconization -- Doing
 Test code
 Complete project
 Write Report (slide)
-```
+``` -->

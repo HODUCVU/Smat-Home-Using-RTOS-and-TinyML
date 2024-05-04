@@ -4,11 +4,11 @@
 #include <Adafruit_NeoPixel.h>
 
 #include <TensorFlowLite_ESP32.h>
-#include <tensorflow/lite/experimental/micro/kernels/all_ops_resolver.h>
-#include <tensorflow/lite/experimental/micro/micro_error_reporter.h>
-#include <tensorflow/lite/experimental/micro/micro_interpreter.h>
-#include <tensorflow/lite/schema/schema_generated.h>
-#include <tensorflow/lite/version.h>
+/* #include <tensorflow/lite/experimental/micro/kernels/all_ops_resolver.h> */
+/* #include <tensorflow/lite/experimental/micro/micro_error_reporter.h> */
+/* #include <tensorflow/lite/experimental/micro/micro_interpreter.h> */
+/* #include <tensorflow/lite/schema/schema_generated.h> */
+/* #include <tensorflow/lite/version.h> */
 
 #include "model.h"
 
