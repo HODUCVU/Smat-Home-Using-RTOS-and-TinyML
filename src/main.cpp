@@ -42,6 +42,91 @@ void taskSmokeDetect(void *pvParameter); //MQ2 and humidity from DHT sensor, pri
 void taskControlLight(void *pvParameter);
 void taskControlFan(void *pvParameter);
 void taskControlWithVoice(void *pvParameter); //Use semaphore and mutex to manage data of controller.
+
+class Sensors {
+protected:
+  int pin;
+  QueueHandle_t queuesReading;
+public:
+  Sensors() {}
+  ~Sensors() {}
+  /* void virtual setup(); */
+  void virtual readValue();
+  void virtual taskHandle(void *pvParameter);
+
+  void virtual setQueuesHandle();
+  QueueHandle_t getQueuesHandle() {
+    return queuesReading;
+  }
+};
+class Objects {
+protected:
+  int pin;
+  bool state;
+  TaskHandle_t handle;
+public:
+  Objects(){}
+  /* void virtual setup(); */
+  void virtual taskHandle(void *pvParameter);
+  void virtual read();
+  void virtual detectVoice();
+  void virtual controllHandle();
+};
+
+class Temperature : public Sensors {
+public:
+  Temperature() : Sensors() {}
+  ~Temperature() {}
+  void readValue() {}
+  void taskHandle(void *pvParameter) {
+
+  }
+  void setQueuesHandle() {}
+
+};
+class Smoking : public Sensors {
+public:
+  Smoking() : Sensors() {}
+  ~Smoking() {}
+
+  void readValue() {}
+  void taskHandle(void *pvParameter) {
+
+  }
+  void setQueuesHandle() {}
+};
+
+class Light : public Objects {
+public:
+  Light() : Objects() {
+    // setup pin mode and so on.
+  }
+  ~Ligh() {
+    // free QueueHandle_t and so on.
+  }
+
+  void taskHandle(void *pvParameter) {}
+  void read(){}
+  void detectVoice(){}
+  void controllHandle(){}
+
+};
+class Fan : public Objects {
+public:
+  Fan() : Objects() {
+    // setup pin mode and so on.
+  }
+  ~Fan() {
+    // free QueueHandle_t and so on.
+  }
+
+  void taskHandle(void *pvParameter) {}
+  void read(){}
+  void detectVoice(){}
+  void controllHandle(){}
+};
+
+
 // Initialization function
 void initValue(bool permissionInit= false) {
   if (permissionInit) {
