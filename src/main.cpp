@@ -45,25 +45,38 @@ void taskControlWithVoice(void *pvParameter); //Use semaphore and mutex to manag
 
 class Sensors {
 protected:
-  int pin;
-  QueueHandle_t queuesReading;
+  int _pin;
+  QueueHandle_t _queuesReading;
 public:
-  Sensors() {}
-  ~Sensors() {}
+  Sensors(int pin) {
+    // print init Sensors
+    _pin = pin;
+    pinMode(_pin, INPUT);
+    _queuesReading = xQueueCreate(10, sizeof(float));  
+  }
+  Sensors(int pin, int sizeQueues) {
+    // print init Sensors
+    _pin = pin;
+    pinMode(_pin, INPUT);
+    _queuesReading = xQueueCreate(sizeQueues, sizeof(float));  
+  }
+  ~Sensors() {
+    // print delete Sensors
+  }
   /* void virtual setup(); */
   void virtual readValue();
   void virtual taskHandle(void *pvParameter);
 
   void virtual setQueuesHandle();
   QueueHandle_t getQueuesHandle() {
-    return queuesReading;
+    return _queuesReading;
   }
 };
 class Objects {
 protected:
-  int pin;
-  bool state;
-  TaskHandle_t handle;
+  int _pin;
+  bool _state;
+  TaskHandle_t _handle;
 public:
   Objects(){}
   /* void virtual setup(); */
@@ -75,18 +88,30 @@ public:
 
 class Temperature : public Sensors {
 public:
-  Temperature() : Sensors() {}
-  ~Temperature() {}
+  Temperature(int pin) : Sensors(int pin) {
+    /* _pin = pin; */
+    /* pinMode(_pin, INPUT); */
+    /* _queuesReading = xQueueCreate(10, sizeof(float));   */
+    /* dht.begin(); */
+  }
+  Temperature(int pin, int sizeQueues) : Sensors(int pin, int sizeQueues) {
+    /* _pin = pin; */
+    /* pinMode(_pin, INPUT); */
+    /* _queuesReading = xQueueCreate(size, sizeof(float));   */
+    /* dht.begin(); */
+  }
   void readValue() {}
   void taskHandle(void *pvParameter) {
 
   }
   void setQueuesHandle() {}
+  ~Temperature() {}
 
 };
 class Smoking : public Sensors {
 public:
-  Smoking() : Sensors() {}
+  Smoking(int pin) : Sensors(int pin) {}
+  Smoking(int pin, int sizeQueues) : Sensors(int pin, int sizeQueues) {}
   ~Smoking() {}
 
   void readValue() {}
