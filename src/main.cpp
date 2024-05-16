@@ -29,34 +29,34 @@
 DHT_Unified dht(DHTPIN, DHTTYPE);
 MQ135 mq135_sensor(MQ135PIN);
 // Queues for FreeRTOSConfig
-QueueHandle_t tempReading;
-QueueHandle_t smokingReading;
+/* QueueHandle_t tempReading; */
+/* QueueHandle_t smokingReading; */
 // Define task task Handle 
-TaskHandle_t handle_Fan = NULL;
-TaskHandle_t handle_Light = NULL;
+/* TaskHandle_t handle_Fan = NULL; */
+/* TaskHandle_t handle_Light = NULL; */
 // Status On/Off -> True/False
-bool fanStatus, lightStatus;
+/* bool fanStatus, lightStatus; */
 // Task functions
-void taskTempRead(void *pvParameter); // print values to monitor -> return temperature
-void taskSmokeDetect(void *pvParameter); //MQ2 and humidity from DHT sensor, print values to monitor -> return threshold
-void taskControlLight(void *pvParameter);
-void taskControlFan(void *pvParameter);
-void taskControlWithVoice(void *pvParameter); //Use semaphore and mutex to manage data of controller.
+/* void taskTempRead(void *pvParameter); // print values to monitor -> return temperature */
+/* void taskSmokeDetect(void *pvParameter); //MQ2 and humidity from DHT sensor, print values to monitor -> return threshold */
+/* void taskControlLight(void *pvParameter); */
+/* void taskControlFan(void *pvParameter); */
+/* void taskControlWithVoice(void *pvParameter); //Use semaphore and mutex to manage data of controller. */
 
 class Sensors {
 protected:
   int _pin;
-  QueueHandle_t _queuesReading;
+  QueueHandle_t _queuesReading = NULL;
 public:
   Sensors(int pin) {
-    // print init Sensors
-    _pin = pin;
+    Serial.print("Initialization Sensor")
+      _pin = pin;
     pinMode(_pin, INPUT);
     _queuesReading = xQueueCreate(10, sizeof(float));  
   }
   Sensors(int pin, int sizeQueues) {
-    // print init Sensors
-    _pin = pin;
+    Serial.print("Initialization Sensor")
+      _pin = pin;
     pinMode(_pin, INPUT);
     _queuesReading = xQueueCreate(sizeQueues, sizeof(float));  
   }
@@ -67,7 +67,8 @@ public:
   void virtual readValue();
   void virtual taskHandle(void *pvParameter);
 
-  void virtual setQueuesHandle();
+  void virtual sendQueuesHandle();
+  /* void virtual receiveQueuesHandle(); */
   QueueHandle_t getQueuesHandle() {
     return _queuesReading;
   }
@@ -75,8 +76,8 @@ public:
 class Objects {
 protected:
   int _pin;
-  bool _state;
-  TaskHandle_t _handle;
+  bool _state = false;
+  TaskHandle_t _handle = NULL;
 public:
   Objects(){}
   /* void virtual setup(); */
@@ -92,19 +93,70 @@ public:
     /* _pin = pin; */
     /* pinMode(_pin, INPUT); */
     /* _queuesReading = xQueueCreate(10, sizeof(float));   */
-    /* dht.begin(); */
+    dht.begin();
   }
   Temperature(int pin, int sizeQueues) : Sensors(int pin, int sizeQueues) {
     /* _pin = pin; */
     /* pinMode(_pin, INPUT); */
     /* _queuesReading = xQueueCreate(size, sizeof(float));   */
-    /* dht.begin(); */
+    dht.begin();
   }
   void readValue() {}
   void taskHandle(void *pvParameter) {
+    try {
+      sensors_event_t event;
+      float temperature;
+      while (true) {
+        // Read Temperature
+        dht.temperature().getEvent(&event);
+        if(isnan(event.temperature)) {
+          Serial.println(F("Error reading temperature"));
+          /* return; // stop */
+          /* vTaskSuspend(handle_Fan); */
+          /* vTaskSuspend(handle_Light); */
+          vTaskDelay(1000/portTICK_PERIOD_MS);
+          continue;
+        }
+        Serial.print(F("Temperature: "));
+        Serial.print(event.temperature);
+        Serial.println(F("°C"));
+        // return float(event.temperature); -> Queues send
+        temperature = event.temperature;
+        /* xQueueSend(tempReading, (void*)&temperature,(TickType_t) 0); */
+        sendQueuesHandle(temperature);
+        vTaskDelay(500/portTICK_PERIOD_MS);
+      }
+    } catch (std::exception& e) {
+      Serial.print(F("Error: "));
+      Serial.println(e.what());
+    }
 
   }
-  void setQueuesHandle() {}
+  void sendQueuesHandle(float temperature) {
+    xQueueSend(_queuesReading, (void*)&temperature,(TickType_t) 0);
+  }
+  /* void receiveQueuesHandle() {} */
+  void inforDHT(){
+    sensor_t sensor;
+    dht.temperature().getSensor(&sensor);
+    Serial.println(F("Temperature Sensor"));
+    Serial.print  (F("Sensor Type: ")); Serial.println(sensor.name);
+    Serial.print  (F("Driver Ver:  ")); Serial.println(sensor.version);
+    Serial.print  (F("Unique ID:   ")); Serial.println(sensor.sensor_id);
+    Serial.print  (F("Max Value:   ")); Serial.print(sensor.max_value); Serial.println(F("°C"));
+    Serial.print  (F("Min Value:   ")); Serial.print(sensor.min_value); Serial.println(F("°C"));
+    Serial.print  (F("Resolution:  ")); Serial.print(sensor.resolution); Serial.println(F("°C"));
+
+    dht.humidity().getSensor(&sensor);
+    Serial.println(F("Humidity Sensor"));
+    Serial.print  (F("Sensor Type: ")); Serial.println(sensor.name);
+    Serial.print  (F("Driver Ver:  ")); Serial.println(sensor.version);
+    Serial.print  (F("Unique ID:   ")); Serial.println(sensor.sensor_id);
+    Serial.print  (F("Max Value:   ")); Serial.print(sensor.max_value); Serial.println(F("%"));
+    Serial.print  (F("Min Value:   ")); Serial.print(sensor.min_value); Serial.println(F("%"));
+    Serial.print  (F("Resolution:  ")); Serial.print(sensor.resolution); Serial.println(F("%"));
+    vTaskDelay(1000/portTICK_PERIOD_MS);
+  }
   ~Temperature() {}
 
 };
@@ -118,7 +170,8 @@ public:
   void taskHandle(void *pvParameter) {
 
   }
-  void setQueuesHandle() {}
+  void sendQueuesHandle() {}
+  /* void receiveQueuesHandle() {} */
 };
 
 class Light : public Objects {
@@ -151,7 +204,6 @@ public:
   void controllHandle(){}
 };
 
-
 // Initialization function
 void initValue(bool permissionInit= false) {
   if (permissionInit) {
@@ -179,43 +231,22 @@ void definingPinMode(bool permisionConfig = false) {
     printf("Config pins mode are not permission");
   }
 }
-void inforDHT(){
-  sensor_t sensor;
-  dht.temperature().getSensor(&sensor);
-  Serial.println(F("Temperature Sensor"));
-  Serial.print  (F("Sensor Type: ")); Serial.println(sensor.name);
-  Serial.print  (F("Driver Ver:  ")); Serial.println(sensor.version);
-  Serial.print  (F("Unique ID:   ")); Serial.println(sensor.sensor_id);
-  Serial.print  (F("Max Value:   ")); Serial.print(sensor.max_value); Serial.println(F("°C"));
-  Serial.print  (F("Min Value:   ")); Serial.print(sensor.min_value); Serial.println(F("°C"));
-  Serial.print  (F("Resolution:  ")); Serial.print(sensor.resolution); Serial.println(F("°C"));
-
-  dht.humidity().getSensor(&sensor);
-  Serial.println(F("Humidity Sensor"));
-  Serial.print  (F("Sensor Type: ")); Serial.println(sensor.name);
-  Serial.print  (F("Driver Ver:  ")); Serial.println(sensor.version);
-  Serial.print  (F("Unique ID:   ")); Serial.println(sensor.sensor_id);
-  Serial.print  (F("Max Value:   ")); Serial.print(sensor.max_value); Serial.println(F("%"));
-  Serial.print  (F("Min Value:   ")); Serial.print(sensor.min_value); Serial.println(F("%"));
-  Serial.print  (F("Resolution:  ")); Serial.print(sensor.resolution); Serial.println(F("%"));
-  vTaskDelay(1000/portTICK_PERIOD_MS);
-}
 void setup() {
   Serial.begin(460800);
-  initValue(true);
-  inforDHT();
-  definingPinMode(true);
+  /* initValue(true); */
+  /* inforDHT(); */
+  /* definingPinMode(true); */
 
-  if(tempReading == NULL || smokingReading == NULL) {
-    Serial.println("Configuration Failed!");
-  } else {
-    // Create Task 
-    xTaskCreate(taskTempRead, "Reading Temperature", 2048, NULL, 3, NULL);
-    xTaskCreate(taskSmokeDetect, "Smoking Detect", 2048, NULL, 2, NULL);
-    xTaskCreate(taskControlFan, "Controller Fan", 1024, NULL, 1, &handle_Fan );
-    xTaskCreate(taskControlLight, "Controller Light", 1024, NULL, 1, &handle_Light);
+  /* if(tempReading == NULL || smokingReading == NULL) { */
+  /* Serial.println("Configuration Failed!"); */
+  /* } else { */
+  // Create Task 
+  /* xTaskCreate(taskTempRead, "Reading Temperature", 2048, NULL, 3, NULL); */
+  /* xTaskCreate(taskSmokeDetect, "Smoking Detect", 2048, NULL, 2, NULL); */
+  /* xTaskCreate(taskControlFan, "Controller Fan", 1024, NULL, 1, &handle_Fan ); */
+  /* xTaskCreate(taskControlLight, "Controller Light", 1024, NULL, 1, &handle_Light); */
 
-  }
+  /* } */
 
   // Turn off fan and light handle 
   /* vTaskSuspend(handle_Fan); */
@@ -224,70 +255,70 @@ void setup() {
 
 void loop() {}
 
-void taskTempRead(void *pvParameter) {
-  try {
-  sensors_event_t event;
-  float temperature;
-  while (true) {
-    // Read Temperature
-    dht.temperature().getEvent(&event);
-    if(isnan(event.temperature)) {
-      Serial.println(F("Error reading temperature"));
-      /* return; // stop */
-      vTaskSuspend(handle_Fan);
-      vTaskSuspend(handle_Light);
-      vTaskDelay(1000/portTICK_PERIOD_MS);
-      continue;
-    }
-    Serial.print(F("Temperature: "));
-    Serial.print(event.temperature);
-    Serial.println(F("°C"));
-    // return float(event.temperature); -> Queues send
-    temperature = event.temperature;
-    xQueueSend(tempReading, (void*)&temperature,(TickType_t) 0);
-    vTaskDelay(500/portTICK_PERIOD_MS);
-  }
-  } catch (std::exception& e) {
-    Serial.print(F("Error: "));
-    Serial.println(e.what());
-  }
-}
+/* void taskTempRead(void *pvParameter) { */
+/*   try { */
+/*   sensors_event_t event; */
+/*   float temperature; */
+/*   while (true) { */
+/*     // Read Temperature */
+/*     dht.temperature().getEvent(&event); */
+/*     if(isnan(event.temperature)) { */
+/*       Serial.println(F("Error reading temperature")); */
+/*       /* return; // stop */ */
+/*       vTaskSuspend(handle_Fan); */
+/*       vTaskSuspend(handle_Light); */
+/*       vTaskDelay(1000/portTICK_PERIOD_MS); */
+/*       continue; */
+/*     } */
+/*     Serial.print(F("Temperature: ")); */
+/*     Serial.print(event.temperature); */
+/*     Serial.println(F("°C")); */
+/*     // return float(event.temperature); -> Queues send */
+/*     temperature = event.temperature; */
+/*     xQueueSend(tempReading, (void*)&temperature,(TickType_t) 0); */
+/*     vTaskDelay(500/portTICK_PERIOD_MS); */
+/*   } */
+/*   } catch (std::exception& e) { */
+/*     Serial.print(F("Error: ")); */
+/*     Serial.println(e.what()); */
+/*   } */
+/* } */
 void taskSmokeDetect(void *pvParameter) {
-  // Read humidity
-  sensors_event_t event;
-  float temperature = 25.0, humidity = 25.0; 
-  float correctedRZero =0.0, resistance = 0.0, correctedPPM = 0.0;
-  while(true) {
-    dht.humidity().getEvent(&event);
-    if(isnan(event.relative_humidity)) {
-      Serial.println(F("Error reading humidity"));
-      // return; //stop 
-      vTaskSuspend(handle_Fan);
-      vTaskDelay(1000/portTICK_PERIOD_MS);
-      continue;
-    }
-    Serial.println("Readed humidity, Waiting for tempReading!");
-    humidity = event.relative_humidity;
-    // tempQueues take
-    if(tempReading != NULL) {
-      if(xQueueReceive(tempReading, &(temperature), (TickType_t) 10 ) ==pdPASS)
-      {
-        correctedRZero = mq135_sensor.getCorrectedRZero(temperature, humidity);
-        resistance = mq135_sensor.getResistance();
-        correctedPPM = mq135_sensor.getCorrectedPPM(temperature, humidity);
-        // Queues Give values (I think we will use ppm for detect smoke)
-        xQueueSend(smokingReading, (void*)&correctedPPM, (TickType_t) 0);
-      }
-    }
-    Serial.println("Smoking Detect: ");
-    Serial.print("Rzero: ");
-    Serial.println(correctedRZero);
-    Serial.print("Resistance: ");
-    Serial.println(resistance);
-    Serial.print("PPM: ");
-    Serial.println(correctedPPM);
-    vTaskDelay(500/portTICK_PERIOD_MS);
+// Read humidity
+sensors_event_t event;
+float temperature = 25.0, humidity = 25.0; 
+float correctedRZero =0.0, resistance = 0.0, correctedPPM = 0.0;
+while(true) {
+  dht.humidity().getEvent(&event);
+  if(isnan(event.relative_humidity)) {
+    Serial.println(F("Error reading humidity"));
+    // return; //stop 
+    vTaskSuspend(handle_Fan);
+    vTaskDelay(1000/portTICK_PERIOD_MS);
+    continue;
   }
+  Serial.println("Readed humidity, Waiting for tempReading!");
+  humidity = event.relative_humidity;
+  // tempQueues take
+  if(tempReading != NULL) {
+    if(xQueueReceive(tempReading, &(temperature), (TickType_t) 10 ) ==pdPASS)
+    {
+      correctedRZero = mq135_sensor.getCorrectedRZero(temperature, humidity);
+      resistance = mq135_sensor.getResistance();
+      correctedPPM = mq135_sensor.getCorrectedPPM(temperature, humidity);
+      // Queues Give values (I think we will use ppm for detect smoke)
+      xQueueSend(smokingReading, (void*)&correctedPPM, (TickType_t) 0);
+    }
+  }
+  Serial.println("Smoking Detect: ");
+  Serial.print("Rzero: ");
+  Serial.println(correctedRZero);
+  Serial.print("Resistance: ");
+  Serial.println(resistance);
+  Serial.print("PPM: ");
+  Serial.println(correctedPPM);
+  vTaskDelay(500/portTICK_PERIOD_MS);
+}
 }
 void taskControlLight(void *pvParameter) {
   // When temperature is cool -> On else Off
