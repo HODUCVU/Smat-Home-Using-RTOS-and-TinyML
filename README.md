@@ -5,6 +5,7 @@ Short-explain: Implement smart home, training tiniML module to control light and
 # Check ESP32 board version
 * [esptool-js](https://espressif.github.io/esptool-js/)
 * [repository](https://github.com/espressif/esptool-js)
+* [Datasheet](https://products.espressif.com/#/product-selector?names=&filter={%22Series%22:[%22ESP32%22]})
 
 # Documents
 ## Papers
