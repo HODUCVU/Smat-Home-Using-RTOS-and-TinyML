@@ -1,6 +1,10 @@
 # Frameworks like TensorFlow Lite and TiniML for Microcontrollers are designed to run on small devices and can be used with the ESP32.
 # Topic: Smart home use FreeRTOS and TinyML on ESP32
-Short-explain: **Triển khai nhà thông minh, huấn luyện cho module về mức nhiệt độ và nồng độ khí, (giọng nói - dùng để mở/tắt đèn/quạt)**
+Short-explain: Implement smart home, training tiniML module to control light and fan by voice. Use temperator and smoking sensor to control light and fan.
+
+# Check ESP32 board version
+* [esptool-js](https://espressif.github.io/esptool-js/)
+* [repository](https://github.com/espressif/esptool-js)
 
 # Documents
 ## Papers

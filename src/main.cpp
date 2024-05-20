@@ -205,32 +205,32 @@ public:
 };
 
 // Initialization function
-void initValue(bool permissionInit= false) {
-  if (permissionInit) {
-    fanStatus = false;
-    lightStatus = false;
-    dht.begin();
-    tempReading = xQueueCreate(10, sizeof(float));
-    smokingReading = xQueueCreate(10, sizeof(float));
-  } else {
-    printf("Initialization values are not permission");
-  }
-} 
-void definingPinMode(bool permisionConfig = false) {
-  if (permisionConfig) {
-    // Output pin mode
-    pinMode(LIGHTPIN, OUTPUT);
-    pinMode(FANPIN, OUTPUT);
-    // Input pin mode
-    /* pinMode(DHTPIN, INPUT); */
-    /* pinMode(MQ135PIN, INPUT); */
-    // Start
-    digitalWrite(LIGHTPIN, HIGH);
-    digitalWrite(FANPIN, LOW);
-  } else {
-    printf("Config pins mode are not permission");
-  }
-}
+/* void initValue(bool permissionInit= false) { */
+/*   if (permissionInit) { */
+/*     fanStatus = false; */
+/*     lightStatus = false; */
+/*     dht.begin(); */
+/*     tempReading = xQueueCreate(10, sizeof(float)); */
+/*     smokingReading = xQueueCreate(10, sizeof(float)); */
+/*   } else { */
+/*     printf("Initialization values are not permission"); */
+/*   } */
+/* }  */
+/* void definingPinMode(bool permisionConfig = false) { */
+/*   if (permisionConfig) { */
+/*     // Output pin mode */
+/*     pinMode(LIGHTPIN, OUTPUT); */
+/*     pinMode(FANPIN, OUTPUT); */
+/*     // Input pin mode */
+/*     /* pinMode(DHTPIN, INPUT); */ */
+/*     /* pinMode(MQ135PIN, INPUT); */ */
+/*     // Start */
+/*     digitalWrite(LIGHTPIN, HIGH); */
+/*     digitalWrite(FANPIN, LOW); */
+/*   } else { */
+/*     printf("Config pins mode are not permission"); */
+/*   } */
+/* } */
 void setup() {
   Serial.begin(460800);
   /* initValue(true); */
