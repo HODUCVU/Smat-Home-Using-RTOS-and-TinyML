@@ -6,3 +6,4 @@ Báo cáo RTOS:
 	+ Operations
 	+ Note: '-' is private, '#' is protected and '+' is public visibility, '->' kế thừa.
 	=> Class Diagram
+
