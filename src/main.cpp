@@ -221,9 +221,7 @@ public:
 /*     // Output pin mode */
 /*     pinMode(LIGHTPIN, OUTPUT); */
 /*     pinMode(FANPIN, OUTPUT); */
-/*     // Input pin mode */
-/*     /* pinMode(DHTPIN, INPUT); */ */
-/*     /* pinMode(MQ135PIN, INPUT); */ */
+/*     /* pinMode(MQ135PIN, INPUT); */ 
 /*     // Start */
 /*     digitalWrite(LIGHTPIN, HIGH); */
 /*     digitalWrite(FANPIN, LOW); */
@@ -232,7 +230,7 @@ public:
 /*   } */
 /* } */
 void setup() {
-  Serial.begin(460800);
+  Serial.begin(115200);
   /* initValue(true); */
   /* inforDHT(); */
   /* definingPinMode(true); */
@@ -264,7 +262,7 @@ void loop() {}
 /*     dht.temperature().getEvent(&event); */
 /*     if(isnan(event.temperature)) { */
 /*       Serial.println(F("Error reading temperature")); */
-/*       /* return; // stop */ */
+/*       /* return; // stop */ 
 /*       vTaskSuspend(handle_Fan); */
 /*       vTaskSuspend(handle_Light); */
 /*       vTaskDelay(1000/portTICK_PERIOD_MS); */
