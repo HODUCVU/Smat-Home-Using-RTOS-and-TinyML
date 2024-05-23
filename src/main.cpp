@@ -19,12 +19,12 @@
 #define I2S_PORT I2S_NUM_1
 // Define PIN
 // Output pin
-#define LIGHTPIN 25
-#define FANPIN 26
+#define LIGHTPIN 4
+#define FANPIN 5
 // Input pin
-#define DHTPIN 12 
+#define DHTPIN 26
 #define DHTTYPE DHT22
-#define MQ135PIN 13
+#define MQ135PIN 25
 // Initialization global values
 DHT_Unified dht(DHTPIN, DHTTYPE);
 MQ135 mq135_sensor(MQ135PIN);
