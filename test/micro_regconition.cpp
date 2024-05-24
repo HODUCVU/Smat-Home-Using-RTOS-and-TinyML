@@ -29,6 +29,7 @@ const int BLOCK_SIZE = 512;
 int16_t samples[BLOCK_SIZE];
 
 arduinoFFT FFT = arduinoFFT();
+// ArduinoFFT<double> FFT = ArduinoFFT<double>(vReal, vImag, SAMPLE_SIZE, SAMPLE_RATE);
 double vReal[BLOCK_SIZE];
 double vImag[BLOCK_SIZE];
 String labels[] = {"125", "250", "500", "1K", "2K", "4K", "8K", "16K"};
@@ -49,7 +50,7 @@ int data_count=0;
 int n=100; //声音的次数
 
 tflite::MicroErrorReporter tflErrorReporter;
-tflite::ops::micro::AllOpsResolver tflOpsResolver;
+tflite::AllOpsResolver tflOpsResolver;
 const tflite::Model* tflModel = nullptr;
 tflite::MicroInterpreter* tflInterpreter = nullptr;
 TfLiteTensor* tflInputTensor = nullptr;
@@ -213,9 +214,9 @@ void FFT_Operation(){
     vImag[i] = 0.0; 
   }
 
-  FFT.Windowing(vReal, BLOCK_SIZE, FFT_WIN_TYP_HAMMING, FFT_FORWARD);
-  FFT.Compute(vReal, vImag, BLOCK_SIZE, FFT_FORWARD);
-  FFT.ComplexToMagnitude(vReal, vImag, BLOCK_SIZE);
+  FFT.windowing(vReal, BLOCK_SIZE, FFT_WIN_TYP_HAMMING, FFT_FORWARD);
+  FFT.compute(vReal, vImag, BLOCK_SIZE, FFT_FORWARD);
+  FFT.complexToMagnitude(vReal, vImag, BLOCK_SIZE);
   for (int i = 0; i < 8; i++) {
     bands[i] = 0;
   }
