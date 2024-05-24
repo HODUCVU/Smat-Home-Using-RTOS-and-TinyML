@@ -70,21 +70,20 @@ public:
   
   Sensors() {}
   Sensors(int pin) {
-    Serial.println("Initialization Sensor");
+    // Serial.println("Initialization Sensor");
     _pin = pin;
     _queuesReading = xQueueCreate(10, sizeof(float));  
-    Serial.println("Complete init Sensor");
+    // Serial.println("Complete init Sensor");
   }
   Sensors(int pin, int sizeQueues) {
-    Serial.print("Initialization Sensor");
+    // Serial.print("Initialization Sensor");
     _pin = pin;
     _queuesReading = xQueueCreate(sizeQueues, sizeof(float));  
-    Serial.println("Complete init Sensor");
+    // Serial.println("Complete init Sensor");
   }
   ~Sensors() {
     // print delete Sensors
   }
-  // void virtual readValue() = 0;
   void virtual taskHandleSensor(void *pvParameter) = 0;
 
   void sendQueuesHandle(float value) {
@@ -97,7 +96,6 @@ public:
       Serial.print(e.what());
     }
   }
-  /* void virtual receiveQueuesHandle(); */
   QueueHandle_t getQueuesHandle() {
     return _queuesReading;
   }
@@ -108,14 +106,14 @@ private:
 public:
   Temperature(){}
   Temperature(int pin) : Sensors(pin) {
-    Serial.println("Initialization Temperature");
+    // Serial.println("Initialization Temperature");
     dht.begin();
-    Serial.println("Complete Temperature");
+    // Serial.println("Complete Temperature");
   }
   Temperature(int pin, int sizeQueues) : Sensors(pin, sizeQueues) {
-    Serial.println("Initialization Temperature");
+    // Serial.println("Initialization Temperature");
     dht.begin();
-    Serial.println("Complete Temperature");
+    // Serial.println("Complete Temperature");
   }
   float getTemp() {
     return _temp;
@@ -127,7 +125,7 @@ public:
         Serial.print("Temperature: ");
         Serial.println(_temp);
         if(!isnan(_temp)) {
-          Serial.println("queue-temp");
+          // Serial.println("queue-temp");
           sendQueuesHandle(_temp);
         }
         vTaskDelay(500/portTICK_PERIOD_MS);
@@ -148,10 +146,10 @@ private:
 public:
   Smoking() {}
   Smoking(int pin) : Sensors(pin) {
-    Serial.println("Initialization Smoking");
+    // Serial.println("Initialization Smoking");
   }
   Smoking(int pin, int sizeQueues) : Sensors(pin, sizeQueues) {
-    Serial.println("Initialization Smoking");
+    // Serial.println("Initialization Smoking");
   }
   ~Smoking() {
     // delete queues
@@ -159,7 +157,6 @@ public:
   float getSmoking() {
     return _smoking;
   }
-  // void readValue() {}
   void taskHandleSensor(void *pvParameter) override {
     try {
       while(true) {
@@ -167,7 +164,7 @@ public:
         Serial.print("Smoking: ");
         Serial.println(_smoking);
         if(!isnan(_smoking)) {
-          Serial.println("queue-smoking");
+          // Serial.println("queue-smoking");
           sendQueuesHandle(_smoking);
         }
         vTaskDelay(500/portTICK_PERIOD_MS);
@@ -196,11 +193,9 @@ public:
     pinMode(_pin, OUTPUT);
     digitalWrite(_pin, LOW);
   }
-  /* void virtual setup(); */
   // void recievequeue(Temperature temp) and Smoking smoking.
   void virtual taskHandleObjectTemp(void *pvParameter) = 0;
   void virtual taskHandleObjectSmoking(void *pvParameter) = 0;
-  // void virtual read() = 0;
   void virtual detectVoice() = 0;
   void virtual controllHandle() = 0;
 };
@@ -212,7 +207,7 @@ public:
   Light() {}
   Light(int pin) : Objects(pin) {
     // setup pin mode and so on.
-    Serial.println("Initialization Light");
+    // Serial.println("Initialization Light");
   }
   ~Light() {
     // free QueueHandle_t and so on.
@@ -227,8 +222,8 @@ public:
                 return;
         }
         xQueueReceive(tempOB->getQueuesHandle(),(void *)&_tempForLight,portMAX_DELAY);
-        Serial.print("Value _tempForLight: ");
-        Serial.println(_tempForLight);
+        // Serial.print("Value _tempForLight: ");
+        // Serial.println(_tempForLight);
         // temp < 25
         if(_tempForLight <= 31 && !_stateForTemp) {
           digitalWrite(_pin, HIGH);
@@ -255,8 +250,8 @@ public:
                 return;
         }
         xQueueReceive(smokingOB->getQueuesHandle(),(void *)&_smokingForLight,portMAX_DELAY);
-        Serial.print("Value _smokingForLight: ");
-        Serial.println(_smokingForLight);
+        // Serial.print("Value _smokingForLight: ");
+        // Serial.println(_smokingForLight);
         if(_smokingForLight >= 1700 && !_stateForSmoking) {
           digitalWrite(_pin, !digitalRead(_pin));
           Serial.println("Light is blinking");
@@ -273,7 +268,6 @@ public:
       Serial.println(e.what());
     }
   }
-  // void read(){}
   void detectVoice() override{}
   void controllHandle() override {}
 
@@ -286,7 +280,7 @@ public:
   Fan(){}
   Fan(int pin) : Objects(pin) {
     // setup pin mode and so on.
-     Serial.println("Initialization Fan");
+    //  Serial.println("Initialization Fan");
   }
   ~Fan() {
     // free QueueHandle_t and so on.
@@ -301,8 +295,8 @@ public:
                 return;
         }
         xQueueReceive(tempOB->getQueuesHandle(),(void *)&_tempForFan,portMAX_DELAY);
-        Serial.print("Value _tempForFan: ");
-        Serial.println(_tempForFan);
+        // Serial.print("Value _tempForFan: ");
+        // Serial.println(_tempForFan);
         // temp < 25
         if(_tempForFan >= 35 && !_stateForTemp) {
           digitalWrite(_pin, HIGH);
@@ -329,8 +323,8 @@ public:
                 return;
         }
         xQueueReceive(smokingOB->getQueuesHandle(),(void *)&_smokingForFan,portMAX_DELAY);
-        Serial.print("Value _smokingForFan: ");
-        Serial.println(_smokingForFan);
+        // Serial.print("Value _smokingForFan: ");
+        // Serial.println(_smokingForFan);
         if(_smokingForFan >= 1700 && !_stateForSmoking) {
           digitalWrite(_pin, HIGH);
           Serial.println("Fan is on");
@@ -347,7 +341,6 @@ public:
       Serial.println(e.what());
     }
   }
-  // void read(){}
   void detectVoice() override {}
   void controllHandle() override {}
 };
@@ -434,30 +427,25 @@ static void taskFanForSmoking(void *pvParameter) {
 }
 void setup() {
   Serial.begin(115200);
-  Serial.println("1");
   try {
   tempOB = new Temperature(DHTPIN);
   smokingOB = new Smoking(MQ135PIN);
   lightOB = new Light(LIGHTPIN);
   fanOB = new Fan(FANPIN);
-  Serial.println("2");
-  if (tempOB->getQueuesHandle() == NULL || smokingOB->getQueuesHandle() == NULL) { // || smokingReading == NULL
+  if (tempOB->getQueuesHandle() == NULL || smokingOB->getQueuesHandle() == NULL) {
     Serial.println("queue NULL");
   } else {
-    Serial.println("3");
     xTaskCreate(taskTemp, "Reading temperature", 2048, NULL, 3, NULL);
     xTaskCreate(taskSmoking, "Smoking Detect", 2048, NULL, 3, NULL); 
     xTaskCreate(taskLightForTemp, "Controller Light temp", 1024, NULL, 2, &(lightOB->_handle)); 
     xTaskCreate(taskLightForSmoking, "Controller Light smoking", 1024, NULL, 2, &(lightOB->_handle)); 
     xTaskCreate(taskFanForTemp, "Controller Fan temp", 1024, NULL, 2, &(fanOB->_handle)); 
     xTaskCreate(taskFanForSmoking, "Controller Fan smoking", 1024, NULL, 2, &(fanOB->_handle)); 
-    Serial.println("4");
   }
   } catch (std::exception &e) {
       Serial.println("Error in 232: ");
       Serial.println(e.what());
   }
-  Serial.println("5");
 }
 
 void loop() {}
