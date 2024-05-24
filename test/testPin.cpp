@@ -4,7 +4,7 @@
     #define LED_BUILTIN 2
 #endif
 #ifndef FAN
-    #define FAN 5
+    #define FAN 4
 #endif
 #if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
 #error Bluetooth is not enabled! Please run `make menuconfig` to and enable it
