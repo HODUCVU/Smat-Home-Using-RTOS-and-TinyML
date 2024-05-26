@@ -1,0 +1,4 @@
+https://github.com/HODUCVU/Smat-Home-Using-RTOS-and-TinyML
+
+Train model:
+https://drive.google.com/drive/folders/1OMB-AGJmTFFldsP32inWp2oI7rZhpjxp?fbclid=IwAR3wBs_pInqZp46k2FC4qY9EMs1W_LJn5BUPd5oZoUTeV8k-y0uEcyX1fs0
