@@ -24,3 +24,22 @@ in CommandProcessor.cpp
     GPIO_NUM_13 -> connect to left motor
     GPIO_NUM_12 -> connect to right motor
 */
+// Output pin
+#ifndef LIGHTPIN 
+#define LIGHTPIN 5
+#endif
+#ifndef FANPIN 
+#define FANPIN 4
+#endif
+// Input pin
+#ifndef DHTPIN 
+// #define DHTPIN 26
+#define DHTPIN 13
+#endif
+#ifndef DHTTYPE 
+#define DHTTYPE DHT22
+#endif
+#ifndef MQ135PIN
+// #define MQ135PIN 25
+#define MQ135PIN 12
+#endif

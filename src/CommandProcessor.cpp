@@ -2,10 +2,10 @@
 #include "CommandProcessor.h"
 
 const char *words[] = {
-    "forward",
-    "backward",
-    "left",
-    "right",
+    "onled",
+    "offled",
+    "onfan",
+    "offfan",
     "_nonsense",
 };
 
@@ -40,30 +40,30 @@ void CommandProcessor::processCommand(uint16_t commandIndex)
     digitalWrite(GPIO_NUM_2, HIGH);
     switch (commandIndex)
     {
-    case 0: // forward
-        digitalWrite(GPIO_NUM_13, HIGH);
-        digitalWrite(GPIO_NUM_12, HIGH);
+    case 0: // forward - onled
+        digitalWrite(5, HIGH);
+        // digitalWrite(GPIO_NUM_12, LOW);
         // ledcWrite(0, calcDuty(leftForward));
         // ledcWrite(1, calcDuty(rightForward));
         vTaskDelay(1000 / portTICK_PERIOD_MS);
         break;
-    case 1: // backward
-        digitalWrite(GPIO_NUM_13, LOW);
-        digitalWrite(GPIO_NUM_12, LOW);
+    case 1: // backward - offled
+        digitalWrite(5, LOW);
+        // digitalWrite(GPIO_NUM_12, LOW);
         // ledcWrite(0, calcDuty(leftBackward));
         // ledcWrite(1, calcDuty(rightBackward));
         vTaskDelay(1000 / portTICK_PERIOD_MS);
         break;
-    case 2: // left
-        digitalWrite(GPIO_NUM_13, LOW);
-        digitalWrite(GPIO_NUM_12, HIGH);
+    case 2: // left - onfan
+        // digitalWrite(GPIO_NUM_13, LOW);
+        digitalWrite(4, HIGH);
         // ledcWrite(0, calcDuty(leftBackward));
         // ledcWrite(1, calcDuty(rightForward));
         vTaskDelay(500 / portTICK_PERIOD_MS);
         break;
-    case 3: // right
-        digitalWrite(GPIO_NUM_13, HIGH);
-        digitalWrite(GPIO_NUM_12, LOW);
+    case 3: // right - offfan
+        // digitalWrite(GPIO_NUM_13, HIGH);
+        digitalWrite(4, LOW);
         // ledcWrite(0, calcDuty(leftForward));
         // ledcWrite(1, calcDuty(rightBackward));
         vTaskDelay(500 / portTICK_PERIOD_MS);
@@ -77,8 +77,9 @@ void CommandProcessor::processCommand(uint16_t commandIndex)
 CommandProcessor::CommandProcessor()
 {
     pinMode(GPIO_NUM_2, OUTPUT);
-    pinMode(GPIO_NUM_12, OUTPUT);
-    pinMode(GPIO_NUM_13, OUTPUT);
+    pinMode(5, OUTPUT);
+    pinMode(4, OUTPUT);
+
     // setup the motors
     // ledcSetup(0, 50, 16);
     // ledcAttachPin(GPIO_NUM_13, 0);
