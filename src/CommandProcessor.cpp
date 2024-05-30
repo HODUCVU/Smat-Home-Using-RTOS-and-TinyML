@@ -35,43 +35,37 @@ const int rightBackward = 1600;
 const int rightForward = 1445;
 const int rightStop = 1500;
 
+bool statusLightGB = false;
+bool statusFanGB = false;
+
+
 void CommandProcessor::processCommand(uint16_t commandIndex)
 {
     digitalWrite(GPIO_NUM_2, HIGH);
     switch (commandIndex)
     {
-    case 0: // forward - onled
+    case 0: // onled
         digitalWrite(5, HIGH);
-        // digitalWrite(GPIO_NUM_12, LOW);
-        // ledcWrite(0, calcDuty(leftForward));
-        // ledcWrite(1, calcDuty(rightForward));
+        statusLightGB = true;
         vTaskDelay(1000 / portTICK_PERIOD_MS);
         break;
-    case 1: // backward - offled
+    case 1: // offled
         digitalWrite(5, LOW);
-        // digitalWrite(GPIO_NUM_12, LOW);
-        // ledcWrite(0, calcDuty(leftBackward));
-        // ledcWrite(1, calcDuty(rightBackward));
+        statusLightGB = false;
         vTaskDelay(1000 / portTICK_PERIOD_MS);
         break;
-    case 2: // left - onfan
-        // digitalWrite(GPIO_NUM_13, LOW);
+    case 2: //  onfan
         digitalWrite(4, HIGH);
-        // ledcWrite(0, calcDuty(leftBackward));
-        // ledcWrite(1, calcDuty(rightForward));
+        statusFanGB = true;
         vTaskDelay(500 / portTICK_PERIOD_MS);
         break;
-    case 3: // right - offfan
-        // digitalWrite(GPIO_NUM_13, HIGH);
+    case 3: // offfan
         digitalWrite(4, LOW);
-        // ledcWrite(0, calcDuty(leftForward));
-        // ledcWrite(1, calcDuty(rightBackward));
+        statusFanGB = false;
         vTaskDelay(500 / portTICK_PERIOD_MS);
         break;
     }
     digitalWrite(GPIO_NUM_2, LOW);
-    // ledcWrite(0, calcDuty(leftStop));  // stop
-    // ledcWrite(1, calcDuty(rightStop)); // stop
 }
 
 CommandProcessor::CommandProcessor()
@@ -79,7 +73,8 @@ CommandProcessor::CommandProcessor()
     pinMode(GPIO_NUM_2, OUTPUT);
     pinMode(5, OUTPUT);
     pinMode(4, OUTPUT);
-
+    statusLightGB = false;
+    statusFanGB = false;
     // setup the motors
     // ledcSetup(0, 50, 16);
     // ledcAttachPin(GPIO_NUM_13, 0);

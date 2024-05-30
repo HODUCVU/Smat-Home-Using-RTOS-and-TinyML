@@ -30,6 +30,8 @@ static const BaseType_t app_cpu = 1;
 // Initialization global values
 DHT dht(DHTPIN, DHTTYPE);
 
+
+
 // =========================================================
 /* 
  * Sensors 
@@ -187,14 +189,16 @@ public:
         }
         xQueueReceive(tempOB->getQueuesHandle(),(void *)&_tempForLight,portMAX_DELAY);
         // temp < 25
-        if(_tempForLight <= 31 && !_stateForTemp) {
-          digitalWrite(_pin, HIGH);
-          Serial.println("Light is on");
-          _stateForTemp = true;
-        } else if (_stateForTemp && !_stateForSmoking) {
-          digitalWrite(_pin, LOW);
-          Serial.println("Light is off");
-          _stateForTemp = false;
+        if (!statusLightGB) {
+          if(_tempForLight <= 31 && !_stateForTemp) {
+            digitalWrite(_pin, HIGH);
+            Serial.println("Light is on");
+            _stateForTemp = true;
+          } else if (_stateForTemp && !_stateForSmoking) {
+            digitalWrite(_pin, LOW);
+            Serial.println("Light is off");
+            _stateForTemp = false;
+          }
         }
         vTaskDelay(200/portTICK_PERIOD_MS);
       }
@@ -212,15 +216,17 @@ public:
           return;
         }
         xQueueReceive(smokingOB->getQueuesHandle(),(void *)&_smokingForLight,portMAX_DELAY);
-        if(_smokingForLight >= 1700 && !_stateForSmoking) {
-          digitalWrite(_pin, !digitalRead(_pin));
-          Serial.println("Light is blinking");
-          _stateForSmoking = true;
-        } else if (_stateForSmoking && !_stateForTemp) {
-          digitalWrite(_pin, LOW);
-          Serial.println("Light is off");
-          _stateForSmoking = false;
-        }
+        if (!statusLightGB) {
+            if(_smokingForLight >= 1700 && !_stateForSmoking) {
+            digitalWrite(_pin, !digitalRead(_pin));
+            Serial.println("Light is blinking");
+            _stateForSmoking = true;
+          } else if (_stateForSmoking && !_stateForTemp) {
+            digitalWrite(_pin, LOW);
+            Serial.println("Light is off");
+            _stateForSmoking = false;
+          }
+        } 
         vTaskDelay(500/portTICK_PERIOD_MS);
       }
     }catch (std::exception& e) {
@@ -253,15 +259,18 @@ public:
         }
         xQueueReceive(tempOB->getQueuesHandle(),(void *)&_tempForFan,portMAX_DELAY);
         // temp < 25
-        if(_tempForFan >= 35 && !_stateForTemp) {
-          digitalWrite(_pin, HIGH);
-          Serial.println("Fan is on");
-          _stateForTemp = true;
-        } else if (_stateForTemp && !_stateForSmoking) {
-          digitalWrite(_pin, LOW);
-          Serial.println("Light is off");
-          _stateForTemp = false;
+        if(!statusFanGB) {
+          if(_tempForFan >= 35 && !_stateForTemp) {
+            digitalWrite(_pin, HIGH);
+            Serial.println("Fan is on");
+            _stateForTemp = true;
+          } else if (_stateForTemp && !_stateForSmoking) {
+            digitalWrite(_pin, LOW);
+            Serial.println("Light is off");
+            _stateForTemp = false;
+          }
         }
+        
         vTaskDelay(200/portTICK_PERIOD_MS);
       }
     }catch (std::exception& e) {
@@ -278,15 +287,17 @@ public:
           return;
         }
         xQueueReceive(smokingOB->getQueuesHandle(),(void *)&_smokingForFan,portMAX_DELAY);
-        if(_smokingForFan >= 1700 && !_stateForSmoking) {
-          digitalWrite(_pin, HIGH);
-          Serial.println("Fan is on");
-          _stateForSmoking = true;
-        } else if (_stateForSmoking && !_stateForTemp) {
-          digitalWrite(_pin, LOW);
-          Serial.println("Fan is off");
-          _stateForSmoking = false;
-        } 
+        if(!statusFanGB) {
+          if(_smokingForFan >= 1700 && !_stateForSmoking) {
+            digitalWrite(_pin, HIGH);
+            Serial.println("Fan is on");
+            _stateForSmoking = true;
+          } else if (_stateForSmoking && !_stateForTemp) {
+            digitalWrite(_pin, LOW);
+            Serial.println("Fan is off");
+            _stateForSmoking = false;
+          } 
+        }
         vTaskDelay(500/portTICK_PERIOD_MS);
       }
     }catch (std::exception& e) {

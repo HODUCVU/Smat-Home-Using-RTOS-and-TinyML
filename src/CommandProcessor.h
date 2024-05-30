@@ -5,6 +5,12 @@
 class StepperMotor;
 class Servo;
 
+// #ifndef _STATUS_
+// #define _STATUS_
+extern bool statusLightGB;
+extern bool statusFanGB;
+// #endif
+
 class CommandProcessor
 {
 private:
