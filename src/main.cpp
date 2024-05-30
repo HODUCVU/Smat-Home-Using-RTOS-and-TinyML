@@ -67,7 +67,7 @@ public:
         xQueueSend(_queuesReading, (void*)&value,(TickType_t) 0);
       }
     } catch (std::exception &e) {
-      Serial.print("Error in 95: ");
+      Serial.print("Error in sendQueuesHandle: ");
       Serial.print(e.what());
     }
   }
@@ -102,7 +102,7 @@ public:
       }
     }
     catch (std::exception &e) {
-      Serial.print("Error in 159: ");
+      Serial.print("Error in Temp: ");
       Serial.println(e.what());
     }
   }
@@ -137,7 +137,7 @@ public:
         vTaskDelay(500/portTICK_PERIOD_MS);
       }
     } catch(std::exception& e) {
-      Serial.print("Error in 187: ");
+      Serial.print("Error in Smoking: ");
       Serial.println(e.what());
     }
 
@@ -163,8 +163,7 @@ public:
   // void recievequeue(Temperature temp) and Smoking smoking.
   void virtual taskHandleObjectTemp(void *pvParameter) = 0;
   void virtual taskHandleObjectSmoking(void *pvParameter) = 0;
-  void virtual detectVoice() = 0;
-  // void virtual controllHandle() = 0;
+  void virtual controllHandle() = 0;
 };
 class Light : public Objects {
 private:
@@ -229,7 +228,6 @@ public:
       Serial.println(e.what());
     }
   }
-  // void detectVoice() override{}
   void controllHandle() override {}
 
 };
@@ -292,11 +290,10 @@ public:
         vTaskDelay(500/portTICK_PERIOD_MS);
       }
     }catch (std::exception& e) {
-      Serial.print("Error in LIGHT: ");
+      Serial.print("Error in FAN: ");
       Serial.println(e.what());
     }
   }
-  // void detectVoice() override {}
   void controllHandle() override {}
 };
 
@@ -311,7 +308,7 @@ static void taskTemp(void *pvParameter) {
     }
     tempOB->taskHandleSensor(pvParameter);
   } catch (std::exception &e) {
-    Serial.print("Error in 251: ");
+    Serial.print("Error in taskTemp: ");
     Serial.print(e.what());
   }
 }
@@ -324,7 +321,7 @@ static void taskSmoking(void *pvParameter) {
     }
     smokingOB->taskHandleSensor(pvParameter);
   } catch (std::exception &e) {
-    Serial.print("Error in 267: ");
+    Serial.print("Error in taskSmoking: ");
     Serial.print(e.what());
   }
 }
@@ -337,7 +334,7 @@ static void taskLightForTemp(void *pvParameter) {
     }
     lightOB->taskHandleObjectTemp(pvParameter);
   } catch (std::exception &e) {
-    Serial.print("Error in 300: ");
+    Serial.print("Error in taskLightForTemp: ");
     Serial.print(e.what());
   }
 }
@@ -350,7 +347,7 @@ static void taskLightForSmoking(void *pvParameter) {
     }
     lightOB->taskHandleObjectSmoking(pvParameter);
   } catch (std::exception &e) {
-    Serial.print("Error in 342: ");
+    Serial.print("Error in taskLightForSmoking: ");
     Serial.print(e.what());
   }
 }
@@ -363,7 +360,7 @@ static void taskFanForTemp(void *pvParameter) {
     }
     fanOB->taskHandleObjectTemp(pvParameter);
   } catch (std::exception &e) {
-    Serial.print("Error in 300: ");
+    Serial.print("Error in taskFanForTemp: ");
     Serial.print(e.what());
   }
 }
@@ -376,7 +373,7 @@ static void taskFanForSmoking(void *pvParameter) {
     }
     fanOB->taskHandleObjectSmoking(pvParameter);
   } catch (std::exception &e) {
-    Serial.print("Error in 342: ");
+    Serial.print("Error in taskFanForSmoking: ");
     Serial.print(e.what());
   }
 }
@@ -472,9 +469,7 @@ void setup() {
       xTaskCreate(taskLightForSmoking, "Controller Light smoking", 1024, NULL, 2, &(lightOB->_handle)); 
       xTaskCreate(taskFanForTemp, "Controller Fan temp", 1024, NULL, 2, &(fanOB->_handle)); 
       xTaskCreate(taskFanForSmoking, "Controller Fan smoking", 1024, NULL, 2, &(fanOB->_handle)); 
-      // xTaskCreate(voiceTask, "Command Detect", 8192, commandDetector, 4, &applicationTaskHandle);
     }
-
     // start sampling from i2s device - use I2S_NUM_0 as that's the one that supports the internal ADC
 #ifdef USE_I2S_MIC_INPUT
     i2s_sampler->start(I2S_NUM_0, i2sMemsConfigBothChannels, applicationTaskHandle);
@@ -482,10 +477,9 @@ void setup() {
     i2s_sampler->start(I2S_NUM_0, adcI2SConfig, applicationTaskHandle);
 #endif
   } catch (std::exception &e) {
-    Serial.println("Error in 232: ");
+    Serial.println("Error in setup: ");
     Serial.println(e.what());
   }
-
 }
 
 void loop() {}
