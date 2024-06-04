@@ -169,11 +169,15 @@ public:
 };
 class Light : public Objects {
 private:
+  int _pinAlarm;
   float _tempForLight = 0.0;
   float _smokingForLight = 0.0;
 public:
   Light() {}
-  Light(int pin) : Objects(pin) {
+  Light(int pin, int pinAlarm) : Objects(pin) {
+    _pinAlarm = pinAlarm;
+    pinMode(_pinAlarm, OUTPUT);
+    digitalWrite(_pinAlarm, LOW);
   }
   ~Light() {
     // free QueueHandle_t and so on.
@@ -190,11 +194,11 @@ public:
         xQueueReceive(tempOB->getQueuesHandle(),(void *)&_tempForLight,portMAX_DELAY);
         // temp < 25
         if (!statusLightGB) {
-          if(_tempForLight <= 31 && !_stateForTemp) {
+          if(_tempForLight <= 31) {
             digitalWrite(_pin, HIGH);
             Serial.println("Light is on");
             _stateForTemp = true;
-          } else if (_stateForTemp && !_stateForSmoking) {
+          } else if (_tempForLight > 31 && _stateForTemp) {
             digitalWrite(_pin, LOW);
             Serial.println("Light is off");
             _stateForTemp = false;
@@ -216,18 +220,16 @@ public:
           return;
         }
         xQueueReceive(smokingOB->getQueuesHandle(),(void *)&_smokingForLight,portMAX_DELAY);
-        if (!statusLightGB) {
-            if(_smokingForLight >= 1700 && !_stateForSmoking) {
-            digitalWrite(_pin, !digitalRead(_pin));
-            Serial.println("Light is blinking");
+          if(_smokingForLight >= 1700) {
+            digitalWrite(_pinAlarm, !digitalRead(_pinAlarm));
+            // Serial.println("Light is blinking");
             _stateForSmoking = true;
-          } else if (_stateForSmoking && !_stateForTemp) {
-            digitalWrite(_pin, LOW);
-            Serial.println("Light is off");
+          } else if (_smokingForLight < 1700 && _stateForSmoking) {
+            digitalWrite(_pinAlarm, LOW);
+            // Serial.println("Light is off");
             _stateForSmoking = false;
-          }
-        } 
-        vTaskDelay(500/portTICK_PERIOD_MS);
+          } 
+        vTaskDelay(200/portTICK_PERIOD_MS);
       }
     }catch (std::exception& e) {
       Serial.print("Error in LIGHT: ");
@@ -260,17 +262,17 @@ public:
         xQueueReceive(tempOB->getQueuesHandle(),(void *)&_tempForFan,portMAX_DELAY);
         // temp < 25
         if(!statusFanGB) {
-          if(_tempForFan >= 35 && !_stateForTemp) {
-            digitalWrite(_pin, HIGH);
-            Serial.println("Fan is on");
+          if(_tempForFan >= 35) {
             _stateForTemp = true;
-          } else if (_stateForTemp && !_stateForSmoking) {
-            digitalWrite(_pin, LOW);
-            Serial.println("Light is off");
+          } else {
             _stateForTemp = false;
           }
+          if(_tempForFan || _smokingForFan) {
+            digitalWrite(_pin, HIGH);
+          } else {
+            digitalWrite(_pin, LOW);
+          }
         }
-        
         vTaskDelay(200/portTICK_PERIOD_MS);
       }
     }catch (std::exception& e) {
@@ -288,17 +290,18 @@ public:
         }
         xQueueReceive(smokingOB->getQueuesHandle(),(void *)&_smokingForFan,portMAX_DELAY);
         if(!statusFanGB) {
-          if(_smokingForFan >= 1700 && !_stateForSmoking) {
-            digitalWrite(_pin, HIGH);
-            Serial.println("Fan is on");
+          if(_smokingForFan >= 1700) {
             _stateForSmoking = true;
-          } else if (_stateForSmoking && !_stateForTemp) {
-            digitalWrite(_pin, LOW);
-            Serial.println("Fan is off");
+          } else {
             _stateForSmoking = false;
           } 
+          if(_tempForFan || _smokingForFan) {
+            digitalWrite(_pin, HIGH);
+          } else {
+            digitalWrite(_pin, LOW);
+          }
         }
-        vTaskDelay(500/portTICK_PERIOD_MS);
+        vTaskDelay(200/portTICK_PERIOD_MS);
       }
     }catch (std::exception& e) {
       Serial.print("Error in FAN: ");
@@ -450,7 +453,7 @@ void setup() {
   try {
     tempOB = new Temperature(DHTPIN);
     smokingOB = new Smoking(MQ135PIN);
-    lightOB = new Light(LIGHTPIN);
+    lightOB = new Light(LIGHTPIN, LIGHTPIN_ALARM);
     fanOB = new Fan(FANPIN);
     // make sure we don't get killed for our long running tasks
     esp_task_wdt_init(10, false);

@@ -28,18 +28,18 @@ in CommandProcessor.cpp
 #ifndef LIGHTPIN 
 #define LIGHTPIN 5
 #endif
+#ifndef LIGHTPIN_ALARM 
+#define LIGHTPIN_ALARM 23
+#endif
 #ifndef FANPIN 
 #define FANPIN 4
 #endif
-// Input pin
 #ifndef DHTPIN 
-// #define DHTPIN 26
 #define DHTPIN 13
 #endif
 #ifndef DHTTYPE 
 #define DHTTYPE DHT22
 #endif
 #ifndef MQ135PIN
-// #define MQ135PIN 25
 #define MQ135PIN 12
 #endif

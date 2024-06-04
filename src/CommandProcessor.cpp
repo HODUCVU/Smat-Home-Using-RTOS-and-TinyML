@@ -22,18 +22,18 @@ void commandQueueProcessorTask(void *param)
     }
 }
 
-int calcDuty(int ms)
-{
-    // 50Hz = 20ms period
-    return (65536 * ms) / 20000;
-}
+// int calcDuty(int ms)
+// {
+//     // 50Hz = 20ms period
+//     return (65536 * ms) / 20000;
+// }
 
-const int leftForward = 1600;
-const int leftBackward = 1400;
-const int leftStop = 1500;
-const int rightBackward = 1600;
-const int rightForward = 1445;
-const int rightStop = 1500;
+// const int leftForward = 1600;
+// const int leftBackward = 1400;
+// const int leftStop = 1500;
+// const int rightBackward = 1600;
+// const int rightForward = 1445;
+// const int rightStop = 1500;
 
 bool statusLightGB = false;
 bool statusFanGB = false;
@@ -47,22 +47,22 @@ void CommandProcessor::processCommand(uint16_t commandIndex)
     case 0: // onled
         digitalWrite(5, HIGH);
         statusLightGB = true;
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
+        vTaskDelay(200 / portTICK_PERIOD_MS);
         break;
     case 1: // offled
         digitalWrite(5, LOW);
         statusLightGB = false;
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
+        vTaskDelay(200 / portTICK_PERIOD_MS);
         break;
     case 2: //  onfan
         digitalWrite(4, HIGH);
         statusFanGB = true;
-        vTaskDelay(500 / portTICK_PERIOD_MS);
+        vTaskDelay(200 / portTICK_PERIOD_MS);
         break;
     case 3: // offfan
         digitalWrite(4, LOW);
         statusFanGB = false;
-        vTaskDelay(500 / portTICK_PERIOD_MS);
+        vTaskDelay(200 / portTICK_PERIOD_MS);
         break;
     }
     digitalWrite(GPIO_NUM_2, LOW);
@@ -75,13 +75,6 @@ CommandProcessor::CommandProcessor()
     pinMode(4, OUTPUT);
     statusLightGB = false;
     statusFanGB = false;
-    // setup the motors
-    // ledcSetup(0, 50, 16);
-    // ledcAttachPin(GPIO_NUM_13, 0);
-    // ledcSetup(1, 50, 16);
-    // ledcAttachPin(GPIO_NUM_12, 1);
-    // ledcWrite(0, calcDuty(1500)); // left
-    // ledcWrite(1, calcDuty(1500)); // right
 
     // allow up to 5 commands to be in flight at once
     m_command_queue_handle = xQueueCreate(5, sizeof(uint16_t));
