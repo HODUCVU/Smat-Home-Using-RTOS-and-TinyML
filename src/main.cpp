@@ -100,7 +100,7 @@ public:
         if(!isnan(_temp)) {
           sendQueuesHandle(_temp);
         }
-        vTaskDelay(500/portTICK_PERIOD_MS);
+        vTaskDelay(200/portTICK_PERIOD_MS);
       }
     }
     catch (std::exception &e) {
@@ -136,7 +136,7 @@ public:
         if(!isnan(_smoking)) {
           sendQueuesHandle(_smoking);
         }
-        vTaskDelay(500/portTICK_PERIOD_MS);
+        vTaskDelay(200/portTICK_PERIOD_MS);
       }
     } catch(std::exception& e) {
       Serial.print("Error in Smoking: ");
@@ -267,7 +267,7 @@ public:
           } else {
             _stateForTemp = false;
           }
-          if(_tempForFan || _smokingForFan) {
+          if(_stateForTemp || _stateForSmoking) {
             digitalWrite(_pin, HIGH);
           } else {
             digitalWrite(_pin, LOW);
@@ -295,7 +295,7 @@ public:
           } else {
             _stateForSmoking = false;
           } 
-          if(_tempForFan || _smokingForFan) {
+          if(_stateForTemp || _stateForSmoking) {
             digitalWrite(_pin, HIGH);
           } else {
             digitalWrite(_pin, LOW);

@@ -15,14 +15,12 @@
 /*
 SCK -> GPIO_33
 WS -> GPIO_26
-L/R -> ??
-    WS or L/R is None connect to esp32? -> test
 SD -> GPIO 25
 VDD and GND -> 3.3V and GND
 
 in CommandProcessor.cpp
-    GPIO_NUM_13 -> connect to left motor
-    GPIO_NUM_12 -> connect to right motor
+    GPIO_NUM_13
+    GPIO_NUM_12
 */
 // Output pin
 #ifndef LIGHTPIN 

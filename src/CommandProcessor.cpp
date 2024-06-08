@@ -22,19 +22,6 @@ void commandQueueProcessorTask(void *param)
     }
 }
 
-// int calcDuty(int ms)
-// {
-//     // 50Hz = 20ms period
-//     return (65536 * ms) / 20000;
-// }
-
-// const int leftForward = 1600;
-// const int leftBackward = 1400;
-// const int leftStop = 1500;
-// const int rightBackward = 1600;
-// const int rightForward = 1445;
-// const int rightStop = 1500;
-
 bool statusLightGB = false;
 bool statusFanGB = false;
 

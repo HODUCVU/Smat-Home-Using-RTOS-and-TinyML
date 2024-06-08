@@ -1,9 +1,0 @@
-Báo cáo RTOS:
-- Vẽ UML mô tả hệ thống.
-- Vẽ biểu đồ lớp (OOP) cho các đối tượng (code theo OOP).
-	+ Name classes
-	+ Attributes:
-	+ Operations
-	+ Note: '-' is private, '#' is protected and '+' is public visibility, '->' kế thừa.
-	=> Class Diagram
-
