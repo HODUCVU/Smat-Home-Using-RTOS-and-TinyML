@@ -6,6 +6,8 @@ const char *words[] = {
     "offled",
     "onfan",
     "offfan",
+    // "start",
+    // "stop",
     "_nonsense",
 };
 
@@ -51,6 +53,10 @@ void CommandProcessor::processCommand(uint16_t commandIndex)
         statusFanGB = false;
         vTaskDelay(200 / portTICK_PERIOD_MS);
         break;
+    // case 4: // start
+    //     break;
+    // case 5: // stop
+    //     break;
     }
     digitalWrite(GPIO_NUM_2, LOW);
 }

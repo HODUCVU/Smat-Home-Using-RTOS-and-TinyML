@@ -7,6 +7,8 @@ Short-explain: Implement smart home, training tiniML module to control light and
 ![](/methods/images/Usecase-Diagram.png) 
 # Class Diagram
 ![](/methods/images/Class-diagram.OVERVIEW.png) 
+<!-- # Reports for this project
+* [Reports](https://github.com/HODUCVU/Smat-Home-Using-RTOS-and-TinyML/tree/main/methods/reports) -->
 
 # Reference
 ## Papers
